@@ -23,6 +23,11 @@ exit 0
 ':'''
 
 import sys
+import os.path
+import struct
+
+
+#### get file names ####
 
 all_file=[]
 if len(sys.argv)==1:
@@ -44,6 +49,35 @@ else:
 
 print(all_file) #test
 	
+########################
 
+for i in range(len(all_file)):
+	fname=all_file[i]
+	if os.path.exists(fname)==False:
+		print("file {} not found".format(fname))
+	else:
+		print("file {} found".format(fname))
+		fr=open(fname,"rb")
+		contenu=fr.read()
+		print(contenu) #test
+		fr.close()
+
+		#things to do	
+		
+		fcreate=fname+".cdt"
+		choice='a'
+		if os.path.exists(fcreate):
+			print("Warning : {} already exist. Do you allow the process to override it?".format(fcreate))
+			while(choice!='y' and choice!='n'):
+				choice=input("y : delete the file and process compression | n : keep the file and cancel compression (for this file only) : ")
+			if choice=='y':
+				fw=open(fcreate,"wb")
+		else:	
+			fw=open(fcreate,"xb")
+		if choice!='n':
+			fw.write(struct.pack("B",11)) #test
+			fw.write(struct.pack("B",12)) #test
+			fw.write(struct.pack("B",13)) #test
+			fw.close()
 
 
