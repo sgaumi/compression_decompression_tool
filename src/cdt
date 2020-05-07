@@ -1,0 +1,25 @@
+#!/bin/bash
+
+''':'
+
+result1=$(exec python3 --version 2>&1) ; ret1=$?
+result2=$(exec python2 --version 2>&1) ; ret2=$?
+	
+
+if [ $ret1 -ne 0 ] ; then
+	if [ $ret2 -ne 0 ] ; then	
+		echo "Error : Not able to execute python3 or python2"
+	else
+		echo "script run using $result2"
+		exec python2 "$0" "$@"
+	fi
+else
+	echo "script run using $result1"
+	exec python3 "$0" "$@"
+fi
+	
+exit 0
+
+':'''
+
+print("it works\n")
