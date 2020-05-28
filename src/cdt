@@ -26,6 +26,32 @@ import sys
 import os.path
 import struct
 
+def c_to_hex_b(c2):
+    c=[]
+    for i in c2:
+        if i=='f' or i=='F':
+            c.append(15)
+        elif i=='e' or i=='E':
+            c.append(14)
+        elif i=='d' or i=='D':
+            c.append(13)
+        elif i=='c' or i=='C':
+            c.append(12)
+        elif i=='b' or i=='B':
+            c.append(11)
+        elif i=='a' or i=='A':
+            c.append(10)
+        else:
+            c.append(int(i))
+    return c[0]*16+c[1]
+
+def wf_hex(hexa,f):
+    n=len(hexa)//2
+    if len(hexa)%2!=0:
+        hexa=hexa+'0'
+        n+=1
+    for i in range(n):
+        f.write(struct.pack("B",c_to_hex_b(hexa[i*2:i*2+2])))
 
 #### get file names ####
 
@@ -62,7 +88,7 @@ for i in range(len(all_file)):
 		print(contenu) #test
 		fr.close()
 
-		#things to do	
+		#	
 		
 		fcreate=fname+".cdt"
 		choice='a'
@@ -75,9 +101,14 @@ for i in range(len(all_file)):
 		else:	
 			fw=open(fcreate,"xb")
 		if choice!='n':
-			fw.write(struct.pack("B",11)) #test
-			fw.write(struct.pack("B",12)) #test
-			fw.write(struct.pack("B",13)) #test
+
+			#perform compression here using contenu for the file content
+
+			#fw.write(struct.pack("B",0b01000001)) #test
+			#fw.write(struct.pack("B",0b01000001)) #test
+			#fw.write(struct.pack("B",0x43)) #test
+			wf_hex("41ab78fe4541",fw) #test
+			#write into file here using hexa code into a char (ex "ab78fe32a4") with wf_hex() function
 			fw.close()
 
 
