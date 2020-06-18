@@ -11,11 +11,11 @@ if [ $ret1 -ne 0 ] ; then
 		echo "Error : Not able to execute python3 or python2"
 	else
 		echo "script run using $result2"
-		exec python2 "$0" "$@"
+		python2 -c "import numpy as np;$(cat $0)" $@
 	fi
 else
 	echo "script run using $result1"
-	exec python3 "$0" "$@"
+	python3 -c "import numpy as np;$(cat $0)" $@
 fi
 	
 exit 0
@@ -25,6 +25,9 @@ exit 0
 import sys
 import os.path
 import struct
+
+#test import
+aaa=np.zeros((2,2))
 
 def c_to_hex_b(c2):
     c=[]
