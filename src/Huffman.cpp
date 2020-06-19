@@ -19,6 +19,7 @@ struct node{
 	//struct node * left;
 	struct arc right;
 	struct arc left;
+	size_t pass=0;
 };
 
 ///////merge sort (decrease)///////
@@ -127,6 +128,16 @@ struct proba probability(std::string text){
 
 }
 
+struct codage{
+	char leaf;
+	std::string bin;
+};
+
+struct graph_search{
+	struct node node;
+	size_t pass;
+};
+
 class HuffmanTree {
 
 private:
@@ -135,6 +146,7 @@ private:
 	//std::vector<struct arc> arcs;
 	struct node * root=nullptr;
 	//std::vector<struct node> leafs;
+	size_t nb_leaf;
 
 public:
 
@@ -145,6 +157,7 @@ public:
 
 
 		size_t n=p.ch.size();
+		nb_leaf=n;
 		signed long long ts=0;
 		std::vector<struct node *> roots;
 		for (size_t i=0 ;i<n;i++){
@@ -203,11 +216,11 @@ std::cout<<std::endl;
 			newr.leaf=NULL;
 			newr.freq=(roots[m1]->freq)+(roots[m2]->freq);
 			newr.right.bin='1';
-			newr.right.child=roots[m1];
+			newr.right.child=&(*roots[m1]);
 			newr.left.bin='0';
-			newr.left.child=roots[m2];
+			newr.left.child=&(*roots[m2]);
 			tree.push_back(newr);
-//std::cout<<"bin "<<tree.back().right.bin<<std::endl;
+std::cout<<"binnn "<<(tree.back().left.child)->leaf<<std::endl;
 //std::cout<<"bin "<<((*(roots[m1])).root)->bin<<std::endl;
 			//std::cout<<roots[roots.begin()+m1]->freq<<std::endl;
 			//roots[m1]=nullptr;
@@ -243,6 +256,14 @@ std::cout<<"root "<<root->freq;
 			<<" right arc["<<tree[i].right.bin<<" "<<tree[i].right.child->freq<<"] "<<std::endl;
 		}*/
 		size_t i=0;
+		struct node * ptr;
+		//(ptr->left.child)->leaf
+		ptr=&(tree[5]);
+		char a=(ptr->left.child)->leaf;
+		for(size_t i=4;i<tree.size();i++){
+			std::cout<<"| "<<(tree[i].left.child)->leaf<<" |";
+		}
+		//ptr=tree
 
 		/*while(i<4){
 			std::cout<<tree[i].leaf<<" bin "<<(tree[i].root)->bin<<" father "<<tree[i].root.father->freq<<std::endl;
@@ -254,6 +275,71 @@ std::cout<<"root "<<root->freq;
 		
 
 
+
+	}
+
+
+	std::vector<struct codage>get_code(){
+		std::cout<<"ici ";
+		std::vector<struct codage> code;
+		
+
+		struct node * ptr;
+		size_t test=1;
+		std::string binc;
+		
+		while(code.size()!=nb_leaf){
+			ptr=root;
+			
+			//size_t a=((ptr->left).child)->pass;
+			
+			signed long long a=tree[0].freq;
+			
+			test=1;
+			binc="";
+			while(test){
+				if((ptr->left.child)->pass!=1){
+					if((ptr->left.child)->leaf!=NULL){
+						(ptr->left.child)->pass==1;
+						struct codage cd;
+						cd.bin=binc;
+						cd.leaf=(ptr->left.child)->leaf;
+						code.push_back(cd);
+						test=0;
+					}
+					else{
+						binc.push_back(ptr->left.bin);
+						ptr=ptr->left.child;
+					}
+				}
+				else{
+					if((ptr->right.child)->pass!=1){
+						if((ptr->right.child)->leaf!=NULL){
+							(ptr->right.child)->pass==1;
+							struct codage cd;
+							cd.bin=binc;
+							cd.leaf=(ptr->right.child)->leaf;
+							code.push_back(cd);
+							test=0;
+						}
+						else{
+							binc.push_back(ptr->right.bin);
+							ptr=ptr->right.child;
+						}
+					}
+					else{
+						ptr->pass=1;
+						test=0;
+					}
+				}
+
+			}
+
+
+
+		}
+
+		return code;
 
 	} 
 
@@ -294,6 +380,7 @@ int main(){
 	/*HuffmanTree * tr=(HuffmanTree *) malloc(sizeof(HuffmanTree));
 	*tr=HuffmanTree("abcdaabcaabbbaaaaa");*/
 	tr.display();
+	//std::vector<struct codage> cod=tr.get_code();
 
 
 
