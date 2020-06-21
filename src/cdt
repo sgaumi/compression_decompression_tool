@@ -24,10 +24,11 @@ if [ ${module: -4} == ".cpp" ] ; then
 	echo "try to build module from $module..."
 	c++ -O3 -Wall -shared -std=c++11 -fPIC `python3 -m pybind11 --includes` $module -o ${module%.cpp}`python3-config --extension-suffix`
 	module=${module%.cpp}
+	module=${module##*/}
 fi
 try1=$(exec python3 -c "import $module" 2>&1) ; er=$?
 if [ $er -ne 0 ] ; then
-	echo "not able to import $mod as a module or build a module from $mod"
+	echo "not able to import $mod as a module or build a module from $mod $module"
 	exit 1
 fi
 

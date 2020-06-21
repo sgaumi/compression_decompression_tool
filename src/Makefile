@@ -6,7 +6,11 @@ module:
 .PHONY: clean
 clean:
 	rm -frd *.so *.cdt
+	rm -frd ../file_test/all*
+	echo "aaaaaaaaaa" >> ../file_test/alla.txt
+	echo "bbbbbbbbbb" >> ../file_test/allb.txt
+	echo "cccccccccc" >> ../file_test/allc.txt
 
 .PHONY: test
 test:
-	pytest
+	cd ../script_test && python3 -m pytest -v -s
