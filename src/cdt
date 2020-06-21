@@ -4,18 +4,50 @@
 
 result1=$(exec python3 --version 2>&1) ; ret1=$?
 result2=$(exec python2 --version 2>&1) ; ret2=$?
+
+comp=true
+#module="Huffman"	#default module when it works
+module="testcompression"
+
+while getopts dcm:f: ops
+	do case $ops in 
+		d)	comp=false ;;
+		c)	comp=true ;;
+		m)	module=$OPTARG ;;
+		f)	files=$OPTARG ;; 
+		[?])	echo "Usage: $0 [-c | -d] [-m module] [-f file | -f 'file1 file2 ...']" ; exit 1	
+	esac
+done
+
+mod=$module
+if [ ${module: -4} == ".cpp" ] ; then
+	echo "try to build module from $module..."
+	c++ -O3 -Wall -shared -std=c++11 -fPIC `python3 -m pybind11 --includes` $module -o ${module%.cpp}`python3-config --extension-suffix`
+	module=${module%.cpp}
+fi
+try1=$(exec python3 -c "import $module" 2>&1) ; er=$?
+if [ $er -ne 0 ] ; then
+	echo "not able to import $mod as a module or build a module from $mod"
+	exit 1
+fi
+
 	
+if $comp ; then
+	comp="comp=True"
+else
+	comp="comp=False"
+fi
 
 if [ $ret1 -ne 0 ] ; then
 	if [ $ret2 -ne 0 ] ; then	
 		echo "Error : Not able to execute python3 or python2"
 	else
 		echo "script run using $result2"
-		python2 -c "import numpy as np;$(cat $0)" $@
+		python2 -c "from $module import compression,decompression;$comp;$(cat $0)" $files
 	fi
 else
 	echo "script run using $result1"
-	python3 -c "import numpy as np;$(cat $0)" $@
+	python3 -c "from $module import compression,decompression;$comp;$(cat $0)" $files
 fi
 	
 exit 0
@@ -26,8 +58,6 @@ import sys
 import os.path
 import struct
 
-#test import
-aaa=np.zeros((2,2))
 
 def c_to_hex_b(c2):
     c=[]
@@ -76,42 +106,90 @@ else:
 	for i in range(1,len(sys.argv)):
 		all_file.append(sys.argv[i])
 
-print(all_file) #test
+#print(all_file) #test
 	
 ########################
 
-for i in range(len(all_file)):
-	fname=all_file[i]
-	if os.path.exists(fname)==False:
-		print("file {} not found".format(fname))
-	else:
-		print("file {} found".format(fname))
-		fr=open(fname,"rb")
-		contenu=fr.read()
-		print(contenu) #test
-		fr.close()
+##### Compression ######
 
-		#	
-		
-		fcreate=fname+".cdt"
-		choice='a'
-		if os.path.exists(fcreate):
-			print("Warning : {} already exist. Do you allow the process to override it?".format(fcreate))
-			while(choice!='y' and choice!='n'):
-				choice=input("y : delete the file and process compression | n : keep the file and cancel compression (for this file only) : ")
-			if choice=='y':
-				fw=open(fcreate,"wb")
-		else:	
-			fw=open(fcreate,"xb")
-		if choice!='n':
+if comp:
+	print("COMPRESSION")
+	for i in range(len(all_file)):
+		fname=all_file[i]
+		if os.path.exists(fname)==False:
+			print("file {} not found".format(fname))
+		else:
+			print("file {} found".format(fname))
+			fr=open(fname,"rb")
+			contenu=fr.read()
+			#print(contenu) #test
+			fr.close()
+			
+			fcreate=fname+".cdt"
+			choice='a'
+			if os.path.exists(fcreate):
+				print("Warning : {} already exist. Do you allow the process to override it?".format(fcreate))
+				while(choice!='y' and choice!='n'):
+					choice=input("y : delete the file and process compression | n : keep the file and cancel compression (for this file only) : ")
+				if choice=='y':
+					fw=open(fcreate,"wb")
+			else:	
+				fw=open(fcreate,"xb")
+			if choice!='n':
 
-			#perform compression here using contenu for the file content
+				comp_contenu=compression(contenu)
+			
+				wf_hex(comp_contenu,fw)
 
-			#fw.write(struct.pack("B",0b01000001)) #test
-			#fw.write(struct.pack("B",0b01000001)) #test
-			#fw.write(struct.pack("B",0x43)) #test
-			wf_hex("41ab78fe4541",fw) #test
-			#write into file here using hexa code into a char (ex "ab78fe32a4") with wf_hex() function
-			fw.close()
+				fw.close()
 
+				print("compression done for {}".format(fname))
 
+###########################
+
+###### Decompression ######
+
+else:
+	print("DECOMPRESSION")
+	for i in range(len(all_file)):
+		fname=all_file[i]
+		if os.path.exists(fname)==False:
+			print("file {} not found".format(fname))
+		else:
+			print("file {} found".format(fname))
+			fr=open(fname,"rb")
+			contenu=fr.read()
+			#print(contenu) #test
+			fr.close()
+
+			choice='a'
+			if fname[-4:]==".cdt":
+				fcreate=fname[:-4]
+			else:
+				print("Warning : {} is maybe not a compressed file (extension is not .cdt). Do you still want to perform decompression on this file? (it may not work).".format(fname))
+				while(choice!='y' and choice!='n'):
+					choice=input("y : yes | n : no : ")
+				fcreate=fname
+
+			if choice!='n':
+				choice='a'
+				if os.path.exists(fcreate):
+					print("Warning : {} already exist. Do you allow the process to override it?".format(fcreate))
+					while(choice!='y' and choice!='n'):
+						choice=input("y : delete the file and process decompression | n : keep the file and cancel decompression (for this file only) : ")
+					if choice=='y':
+						fw=open(fcreate,"w")
+				else:	
+					fw=open(fcreate,"x")
+
+			if choice!='n':
+
+				decomp_contenu=decompression(contenu.hex())
+
+				fw.write(decomp_contenu)
+
+				fw.close()
+
+				print("decompression done for {}".format(fname))
+
+##################################

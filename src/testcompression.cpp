@@ -1,7 +1,10 @@
-#include <vector>
 #include <string>
 #include <iostream>
 #include <math.h>
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
+
 
 char bin_hex(std::string bin){
 	int ent=0;
@@ -98,7 +101,7 @@ std::string decompression(std::string hexa){
 
 }
 
-int main(){
+/*int main(){
 
 char a='A';
 size_t b=a;
@@ -119,4 +122,11 @@ std::cout<<std::endl<<decompression("8242c2");
 
 
 
+}*/
+
+PYBIND11_MODULE(testcompression, m) {
+    m.doc() = "compression and decompression algorithm for cdt";
+
+    m.def("compression", &compression);
+	m.def("decompression",&decompression);
 }
