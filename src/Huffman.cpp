@@ -19,6 +19,7 @@ struct node{
 	//struct node * left;
 	struct arc right;
 	struct arc left;
+	//struct arc * root;
 	size_t pass=0;
 };
 
